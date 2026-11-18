@@ -3,119 +3,41 @@ import * as React from "react"
 import { m } from "framer-motion"
 
 import { ArchiveSheet } from "@/components/portfolio/archive/archive-sheet"
-import { ArchiveStripe } from "@/components/portfolio/archive/archive-stripe"
+import { InteractiveLogoMark } from "@/components/portfolio/archive/InteractiveLogoMark"
 import { DURATION, EASE, TIMING } from "@/components/portfolio/motion"
 
 import { archiveCompanies, type ArchiveCompany } from "./portfolio-archive.model"
-import { contacts, type CompanyId } from "./portfolio.data"
+import { contacts, profile, type CompanyId } from "./portfolio.data"
 
 import "@/styles/portfolio-archive.css"
 
-/**
- * `/archive` — швейцарский экран-заезд.
- *
- * Перенос согласованного с владельцем прототипа
- * `outputs/portfolio-swiss-shot/2026-08-11/prototype/v8.html` (репозиторий
- * студии) на стек сайта. Все выверенные величины подняты в переменные
- * `--pa-*` в `styles/portfolio-archive.css` и там же объяснены; здесь остаётся
- * состав экрана и поведение.
- *
- * ─── ЭТОТ ЭКРАН СТОИТ РЯДОМ, А НЕ ВМЕСТО ────────────────────────────────────
- * Маршруты `/`, `/<companyId>` и `/<companyId>/case/<caseId>` не тронуты: сайт
- * по ним проиндексирован. Экран не пользуется ни темой `portfolio`, ни её
- * контейнером `ShadcnThemeScope` — у него собственная поверхность (чернила,
- * кобальт, три гарнитуры), и она скоупнута на `.pa-root` и на атрибут
- * `data-portfolio-surface` корня документа. Компоненты реестра сюда не
- * годятся по построению: на экране нет ни одного примитива реестра — только
- * типографика, полоса и строки.
- *
- * ─── ЧТО ДАЮТ ДАННЫЕ ────────────────────────────────────────────────────────
- * Имена, отрасли, годы, кейсы и их итоги приходят из `portfolio.data.ts` через
- * `portfolio-archive.model.ts`. В прототипе они были вписаны руками и местами
- * расходились с сайтом. Латиница имён (PRODUCT / Archive / SAMOLET / RTK) —
- * решение владельца по макету, разбор — там же в модели.
- */
-
-/** Порядок появления содержимого при заходе — как в прототипе. */
 const REVEAL_ORDER = {
-  cursive: 0,
-  top: 1,
-  word: 2,
-  works: 3,
-  spec: 4,
+  top: 0,
+  logo: 1,
+  lead: 2,
+  worksLabel: 3,
+  line: 3,
+  companyBase: 4,
 } as const
 
-/** Шаг лесенки проявления, секунды. */
 const REVEAL_STAGGER = TIMING.revealStagger
-
-/** Длительность проявления одного блока, секунды. */
 const REVEAL_DURATION = DURATION.reveal
-
-/*
- * Развёртка блока: закрыт — открыт. Сдвиг снизу (`y: 14`) и кривая входа
- * сняты 14.09.2026 вместе с разнобоем направлений.
- */
-const CLIP_SHUT = "inset(0 100% 0 0)"
-const CLIP_OPEN = "inset(0 0% 0 0)"
-
-/*
- * Кривая прежняя. Линейная стояла здесь ради «ровной развёртки», но сдвинула
- * темп проявления на 160 мс: проверки «текст встаёт одинаково с главной и с
- * кейса» и «занавес идёт в темпе открытия» поймали разницу. Направление задаёт
- * клип, а темп — эта кривая, и трогать его было незачем.
- */
 const EASE_REVEAL = EASE.item
-
-/** Потолок ожидания гарнитур перед проявлением, мс. */
 const FONTS_TIMEOUT = 600
-
-/**
- * Подпись цвета внизу экрана. Строка из макета: она документирует кобальт как
- * основной цвет системы и контраст к белому.
- */
-const COLOR_SPEC = "#044AB3 · контраст к белому 7,97 : 1 · основной цвет системы"
+const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V"] as const
 
 export interface PortfolioArchiveViewProps {
-  /**
-   * Компания, синий экран которой раскрыт. Приходит ИЗ АДРЕСА: `/` — ни одной,
-   * `/a3` — А3.
-   *
-   * 🔴 Вид управляемый, и это не стилистика. Пока раскрытая компания жила
-   * внутри вида, адрес и экран расходились в обе стороны: нажатие на имя
-   * открывало синий экран, не меняя `/`, а закрытие экрана на `/a3` оставляло
-   * `/a3` в строке при показанном ряде имён. Обновление страницы в обоих
-   * случаях показывало не то, на что человек смотрел. Поймано 2026-08-15
-   * обходом всех переходов; ни одна ось приёмки этот класс не видит — экран
-   * верный, содержимое верное, врёт только адрес.
-   */
+  /** Компания, синий экран которой раскрыт (`/` — ни одной, `/a3` — А3). */
   companyId?: CompanyId
-  /**
-   * Показать синий экран сразу открытым, без спуска.
-   *
-   * 🔴 Решает МАРШРУТ, а не вид: только он знает, откуда человек пришёл. Спуск
-   * идёт с главной — и нажатием на имя, и кнопкой «вперёд» в браузере; заход по
-   * ссылке и возврат с кейса открывают экран сразу, иначе из-под уходящего
-   * занавеса видно, как плоскость едет второй раз, и мелькает ряд имён.
-   *
-   * Вид пробовал вычислять это сам, по факту нажатия внутри себя, и дважды
-   * ошибался: сначала открывал нажатием мгновенно вместо спуска, потом не знал
-   * про кнопки браузера, из-за чего «вперёд» на компанию шло без движения.
-   */
+  /** Показать синий экран сразу открытым, без спуска. */
   instant?: boolean
-  /**
-   * Содержимое синего экрана уже показано — лесенка не играет.
-   *
-   * 🔴 Ровно один случай: подмена под уехавшим листом возврата. Там лесенку
-   * отыграл сам приехавший лист, и повтор моргнул бы текстом на стыке. Во всех
-   * прочих случаях лесенка идёт — правило владельца «один и тот же экран
-   * открывается одинаково, откуда бы ни пришли».
-   */
+  /** Содержимое синего экрана уже показано — лесенка не играет. */
   revealed?: boolean
   /** Закрытие синего экрана: маршрут уходит на главную. */
   onCloseCompany?: () => void
   /** Раскрытие компании нажатием на её имя: маршрут уходит на `/<companyId>`. */
   onOpenCompany?: (companyId: CompanyId) => void
-  /** Переход на страницу кейса из строки на синем экране. */
+  /** Переход на страницу кейса. */
   onOpenCase?: (companyId: CompanyId, caseId: string) => void
 }
 
@@ -127,19 +49,6 @@ export function PortfolioArchiveView({
   onOpenCompany,
   onOpenCase,
 }: PortfolioArchiveViewProps) {
-  /*
-   * Системная настройка «уменьшить движение» этот экран НЕ гасит — решение
-   * владельца 2026-08-13. Разбор: движение здесь и есть содержание, а не
-   * оформление; заезд болида, единственное крупное перемещение, при заходе
-   * больше не идёт и запускается только прямым нажатием на шахматку. Подробно —
-   * в шапке `archive-sheet.tsx`.
-   */
-
-  /*
-   * Проявление содержимого больше НЕ ждёт заезда: с 2026-08-13 заезд — пасхалка
-   * на флаге, а не загрузка. Ждём только гарнитуры: кегль 130 и курсив 138
-   * подменой шрифта дёргают всю раскладку, и лесенка на этом дёрганье видна.
-   */
   const [ready, setReady] = React.useState(false)
 
   React.useEffect(() => {
@@ -160,26 +69,9 @@ export function PortfolioArchiveView({
     }
   }, [])
 
-  /*
-   * Экран открыт адресом, а не нажатием, — значит спуск не играется.
-   *
-   * Различить их можно только по тому, КАК изменилась раскрытая компания:
-   * нажатие внутри экрана взводит признак перед сменой маршрута, а заход по
-   * адресу, возврат с кейса и кнопка «назад» в браузере его не трогают. При
-   * первом рендере признака нет — заход на `/a3` показывает экран сразу
-   * открытым, без лишнего спуска.
-   */
   const company: ArchiveCompany | undefined = archiveCompanies.find((item) => item.id === openId)
-
-  // Узел, с которого открыли синий экран: на него возвращается фокус.
   const cellsRef = React.useRef(new Map<CompanyId, HTMLButtonElement>())
 
-  /*
-   * Канва документа и запрет прокрутки живут на `html`, а не на контейнере:
-   * за боксом страницы (overscroll, системные зоны мобильного браузера) виден
-   * фон именно корня. Атрибут снимается при уходе с маршрута — остальные
-   * страницы сайта о нём не знают.
-   */
   React.useEffect(() => {
     const root = document.documentElement
     const previous = root.dataset.portfolioSurface
@@ -191,14 +83,6 @@ export function PortfolioArchiveView({
     }
   }, [])
 
-  /*
-    Главная под открытым листом выключается целиком.
-
-    🔴 Не `aria-hidden`, а `inert`: он снимает поддерево и из чтения диктором, и
-    из табуляции, и из нажатий одним свойством. Через `aria-hidden` пришлось бы
-    отдельно раздавать `tabindex="-1"` каждому из шести достижимых элементов, а
-    новый элемент на главной про это правило не узнал бы.
-  */
   const screenRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
@@ -213,36 +97,34 @@ export function PortfolioArchiveView({
   }, [openId])
 
   const closeCompany = React.useCallback(() => {
-    /*
-      Фокус возвращается на ту ячейку, с которой экран открыли, — до смены
-      маршрута: после неё синего экрана в дереве уже нет.
-
-      🔴 `inert` снимается ПЕРЕД возвратом фокуса, а не после. Пока поддерево
-      выключено, `.focus()` на ячейке не делает ничего и молча: браузер не
-      ошибается, фокус просто остаётся на месте, а экран закрывается — то есть
-      дефект выглядел бы как «фокус улетел в body».
-    */
     if (screenRef.current) screenRef.current.inert = false
     if (openId) cellsRef.current.get(openId)?.focus()
     onCloseCompany?.()
   }, [onCloseCompany, openId])
 
-  /*
-    Проявление блока при заходе: индекс задаёт место в лесенке.
-
-    🔴 НАПРАВЛЕНИЕ У ВСЕГО ЭКРАНА ОДНО — СЛЕВА НАПРАВО. Правка владельца
-    14.09.2026: «засинхронь всю анимацию, а то одни появляются слева направо,
-    вторые снизу вверх».
-
-    До неё блоки выезжали снизу на 14 px с растворением, а полоса набиралась
-    квадратами слева направо: два разных жеста на одном экране. Теперь блок
-    открывается клипом от левого края — тем же движением, что фронт сборки
-    полосы и белая полоска над ней. Кривая линейная по той же причине: это
-    развёртка, а не выезд, и ускорение в ней читается как сбой темпа.
-  */
   const reveal = (index: number) => ({
-    animate: ready ? { clipPath: CLIP_OPEN, opacity: 1 } : { clipPath: CLIP_SHUT, opacity: 0 },
-    initial: { clipPath: CLIP_SHUT, opacity: 0 },
+    animate: ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 },
+    initial: { opacity: 0, y: 10 },
+    transition: {
+      delay: ready ? index * REVEAL_STAGGER : 0,
+      duration: REVEAL_DURATION,
+      ease: EASE_REVEAL,
+    },
+  })
+
+  const drawLineX = (index: number) => ({
+    animate: ready ? { scaleX: 1, opacity: 1 } : { scaleX: 0, opacity: 0 },
+    initial: { scaleX: 0, opacity: 0 },
+    transition: {
+      delay: ready ? index * REVEAL_STAGGER : 0,
+      duration: REVEAL_DURATION,
+      ease: EASE_REVEAL,
+    },
+  })
+
+  const drawLineY = (index: number) => ({
+    animate: ready ? { scaleY: 1, opacity: 1 } : { scaleY: 0, opacity: 0 },
+    initial: { scaleY: 0, opacity: 0 },
     transition: {
       delay: ready ? index * REVEAL_STAGGER : 0,
       duration: REVEAL_DURATION,
@@ -252,26 +134,27 @@ export function PortfolioArchiveView({
 
   return (
     <div className="pa-root" data-testid="pa-root">
-
       <div className="pa-screen" ref={screenRef}>
-        <m.div className="pa-top" data-testid="pa-top" {...reveal(REVEAL_ORDER.top)}>
-          {/*
-            Слева подпись, а не кнопка: этот экран и есть главная сайта, вести
-            с неё на саму себя не за чем. На странице кейса та же строка —
-            кнопка, и там она ведёт сюда.
-          */}
-          <span>портфолио · 2026</span>
+        <m.header className="pa-top" data-testid="pa-top" {...reveal(REVEAL_ORDER.top)}>
+          <div className="pa-brand">
+            <svg
+              aria-hidden="true"
+              className="pa-top-logo"
+              fill="none"
+              viewBox="0 0 32 22"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M0 0H7.5V15.5L15.5 7.5V22H8L0 14V0Z" fill="currentColor" />
+              <path d="M16.5 0H24L32 8V22H24.5V6.5L16.5 14.5V0Z" fill="currentColor" />
+            </svg>
+            <div className="pa-brand-text">
+              <span className="pa-brand-name">{profile.name}</span>
+              <h1 className="pa-brand-title" data-testid="pa-word">
+                {profile.title}
+              </h1>
+            </div>
+          </div>
 
-          {/*
-            Справа все каналы связи, а не одна почта: прежняя главная держала
-            их строкой внизу, и при переносе дизайна они были бы потеряны —
-            решение владельца 2026-08-15 оставить на главной именно ссылки.
-
-            🔴 Все три подписаны СЛОВОМ, включая почту. Раньше почта выводилась
-            самим адресом, и он оставался открытым в разметке — а это ровно то,
-            что собирают почтовые роботы. Адрес теперь виден только в `href` и
-            в строке состояния браузера при наведении.
-          */}
           <span className="pa-contacts" data-testid="pa-contacts">
             {contacts.map((channel) => (
               <a
@@ -285,69 +168,70 @@ export function PortfolioArchiveView({
               </a>
             ))}
           </span>
-        </m.div>
+        </m.header>
 
-        <div className="pa-title">
-          <m.div className="pa-word" data-testid="pa-word" {...reveal(REVEAL_ORDER.word)}>
-            Product
-          </m.div>
-
-          <ArchiveStripe
-            /*
-              Слово курсивом — подпись, а не кнопка: заезд снят 14.09.2026
-              вместе с болидом, и запускать нечего.
-            */
-            cursive={
-              <m.div
-                className="pa-cursive"
-                data-testid="pa-cursive"
-                {...reveal(REVEAL_ORDER.cursive)}
-              >
-                Archive
-              </m.div>
-            }
-          />
-        </div>
-
-        <m.div className="pa-works" data-testid="pa-works" {...reveal(REVEAL_ORDER.works)}>
-          <div className="pa-works-label">работы</div>
-          <div className="pa-row">
-            {archiveCompanies.map((item, index) => (
-              <React.Fragment key={item.id}>
-                {index > 0 ? <span aria-hidden="true" className="pa-sep" /> : null}
-                <button
-                  className="pa-cell"
-                  data-testid={`pa-company-${item.id}`}
-                  onClick={() => onOpenCompany?.(item.id)}
-                  ref={(node) => {
-                    if (node) cellsRef.current.set(item.id, node)
-                    else cellsRef.current.delete(item.id)
-                  }}
-                  type="button"
-                >
-                  <span className="pa-name">{item.wordmark}</span>
-                  <span className="pa-meta">{item.meta}</span>
-                </button>
-              </React.Fragment>
-            ))}
+        <section className="pa-hero">
+          <div className="pa-hero-centerpiece">
+            <InteractiveLogoMark className="pa-hero-logo" revealProps={reveal(REVEAL_ORDER.logo)} />
+            <m.p className="pa-hero-lead" {...reveal(REVEAL_ORDER.lead)}>
+              {profile.lead}
+            </m.p>
           </div>
-        </m.div>
 
-        <m.div className="pa-spec" {...reveal(REVEAL_ORDER.spec)}>
-          {COLOR_SPEC}
-        </m.div>
+          <div className="pa-works" data-testid="pa-works">
+            <m.div className="pa-works-label" {...reveal(REVEAL_ORDER.worksLabel)}>
+              компании и кейсы
+            </m.div>
+            <div className="pa-row">
+              <m.span
+                aria-hidden="true"
+                className="pa-row-top-line"
+                {...drawLineX(REVEAL_ORDER.line)}
+              />
+              {archiveCompanies.map((item, index) => (
+                <React.Fragment key={item.id}>
+                  {index > 0 ? (
+                    <m.span
+                      aria-hidden="true"
+                      className="pa-sep"
+                      {...drawLineY(REVEAL_ORDER.companyBase + index)}
+                    />
+                  ) : null}
+                  <m.button
+                    className="pa-cell"
+                    data-testid={`pa-company-${item.id}`}
+                    onClick={() => onOpenCompany?.(item.id)}
+                    ref={(node) => {
+                      if (node) cellsRef.current.set(item.id, node)
+                      else cellsRef.current.delete(item.id)
+                    }}
+                    type="button"
+                    {...reveal(REVEAL_ORDER.companyBase + index)}
+                  >
+                    <span className="pa-cell-head">
+                      <span className="pa-cell-idx">({ROMAN_NUMERALS[index] ?? index + 1})</span>
+                      <span className="pa-meta">{item.meta}</span>
+                    </span>
+                    <span className="pa-name">{item.wordmark}</span>
+                    <m.span
+                      aria-hidden="true"
+                      className="pa-cell-rail"
+                      {...drawLineX(REVEAL_ORDER.companyBase + index)}
+                    />
+                  </m.button>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
 
       <ArchiveSheet
         company={company}
-        /*
-          Спускать или показать сразу — решение маршрута: он единственный знает,
-          пришёл человек с главной (спуск) или по ссылке и с кейса (сразу).
-        */
         instant={instant}
         onClose={closeCompany}
-        revealed={revealed}
         onOpenCase={onOpenCase}
+        revealed={revealed}
       />
     </div>
   )

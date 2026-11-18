@@ -174,63 +174,86 @@ html[data-portfolio-surface="archive"] body {
 html[data-portfolio-surface="archive"],
 html[data-portfolio-surface="archive"] body {
   overflow: auto;
-}
-
-@media (min-width: 1200px) and (min-height: 1000px) {
-  html[data-portfolio-surface="archive"],
-  html[data-portfolio-surface="archive"] body {
-    overflow: hidden;
-  }
+  background-color: var(--s-surface-paper);
+  color: var(--pa-ink);
 }
 
 .pa-root {
   position: relative;
   min-block-size: 100dvh;
-  background-color: var(--pa-ink);
-  color: var(--pa-paper);
+  background-color: var(--s-surface-paper);
+  color: var(--pa-ink);
   font-family: var(--pa-sans);
 }
 
-/* ─── СЕТКИ-ПОДЛОЖКИ БОЛЬШЕ НЕТ ────────────────────────────────────────────
- * Снята 14.09.2026 по решению владельца вместе с заменой заливки полосы на
- * живой растр: две клетки на одном экране — фоновая и растровая — читались как
- * рябь. Шаг клетки (`--pa-cell`) остаётся: от него считается вертикальный ритм
- * главной, а не только рисунок подложки.
- */
-
 /* ─── Экран ────────────────────────────────────────────────────────────────── */
 
-/*
- * Высота РАСТУЩАЯ, а не ровно окно. При `block-size: 100dvh` контейнер не
- * тянулся под содержимое, и на невысоком окне низ просто срезался: на 1280×900
- * служебная строка оказывалась на 11 px ниже края, а документ оставался ровно
- * 900 — прокрутка не появлялась, потому что переполнять было нечего. Теперь
- * окно задаёт минимум, а не потолок.
- */
 .pa-screen {
   position: relative;
   z-index: var(--s-layer-raised);
   display: flex;
   flex-direction: column;
   min-block-size: 100dvh;
-  padding: var(--pa-field);
 }
 
+/* ─── Верхняя строка без отделяющей линии ──────────────────────────────────── */
+
 .pa-top {
+  position: relative;
+  z-index: var(--s-layer-sticky);
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--p-space-4);
+  padding-inline: var(--pa-field);
+  padding-block-start: var(--pa-field);
+  padding-block-end: var(--p-space-4);
   font-family: var(--pa-mono);
   font-size: var(--pa-meta-size);
   line-height: var(--pa-top-leading);
-  letter-spacing: 0.06em;
-  color: var(--pa-mute);
+  letter-spacing: 0.04em;
+  color: var(--s-text-quiet);
 }
 
-/*
- * Каналы связи в правом углу главной. Разделитель — тот же middot, что во всех
- * служебных строках экрана; ставится псевдоэлементом, чтобы не заводить в
- * разметке узлы, которые ничего не значат для чтения с экрана.
- */
+.pa-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-space-3);
+}
+
+.pa-top-logo {
+  inline-size: 28px;
+  block-size: 20px;
+  color: var(--pa-cobalt);
+  flex-shrink: 0;
+}
+
+.pa-brand-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--p-space-1);
+}
+
+.pa-brand-name {
+  font-family: var(--pa-sans);
+  font-size: var(--p-size-sub);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--pa-ink);
+}
+
+.pa-brand-title {
+  margin: 0;
+  font-family: var(--pa-sans);
+  font-size: var(--p-size-body);
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--s-text-quiet);
+}
+
 .pa-contacts {
   display: flex;
   gap: 0;
@@ -238,16 +261,11 @@ html[data-portfolio-surface="archive"] body {
 
 .pa-contact {
   position: relative;
-  color: inherit;
+  color: var(--pa-ink);
   text-decoration: none;
   transition: color var(--pa-dur-hover) ease;
 }
 
-/*
- * Зазор и разделитель считаются вместе: точка шириной ~0.3em стоит В СЕРЕДИНЕ
- * промежутка, иначе она прилипает к следующему слову и строка читается как
- * «tg ·ignatov».
- */
 .pa-contact + .pa-contact {
   margin-inline-start: 1.3em;
 }
@@ -255,29 +273,15 @@ html[data-portfolio-surface="archive"] body {
 .pa-contact + .pa-contact::before {
   content: "·";
   position: absolute;
-  /* Замер на 2560: зазор 17 px, знак в моноширинной 7,8 — по 4,6 с каждой
-     стороны. При -0,8em оставалось 6,6 слева и 2,7 справа, и точка читалась
-     приклеенной к следующему слову. */
   inset-inline-start: -0.95em;
-  color: var(--pa-mute);
+  color: var(--s-text-quiet);
 }
 
 .pa-contact:hover,
 .pa-contact:focus-visible {
-  color: var(--pa-ink-invert);
+  color: var(--pa-cobalt);
 }
 
-/*
- * ─── ТАЧ-ЦЕЛЬ ДОБИРАЕТСЯ ПСЕВДОЭЛЕМЕНТОМ, А НЕ ОТСТУПАМИ ───────────────────
- *
- * Сама строка стоит по сетке макета, и padding сдвинул бы её с места. По тексту
- * цель была 13×18 — вдвое меньше минимума WCAG 2.5.8 (24×24) и втрое меньше
- * комфортных 44. Вылет псевдоэлемента растит зону нажатия, не трогая вид.
- *
- * Это образец приёма для всего сайта (на него ссылаются GEMINI.md и
- * design/COMPONENTS.md). До 15.09.2026 образцом была кнопка «на главную»
- * (`.pa-home`) — её сняли с экрана, стили остались мёртвыми и удалены.
- */
 .pa-contact::after {
   content: "";
   position: absolute;
@@ -286,249 +290,202 @@ html[data-portfolio-surface="archive"] body {
   min-block-size: var(--s-target-touch);
 }
 
-.pa-title {
-  margin-block-start: var(--pa-title-offset);
-}
+/* ─── Воздушный центр со знаком «ИИ» и коротким лидом ──────────────────────── */
 
-.pa-word {
-  font-size: var(--pa-word-size);
-  font-weight: 600;
-  line-height: var(--pa-word-leading);
-  letter-spacing: var(--pa-word-tracking);
-  text-transform: uppercase;
-}
-
-/* ─── Полоса Archive ───────────────────────────────────────────────────────
- * Ступень уходит от левого поля вправо навылет и накрывает низ PRODUCT.
- * Белая кромка сверху — та самая линия рубежа, по которой едет болид.
- */
-.pa-stripe {
+.pa-hero {
   position: relative;
   z-index: var(--s-layer-raised);
-  /*
-   * 🔴 Свой слой смешивания. Слово «Archive» вырезано в ленте
-   * (`mix-blend-mode: destination-out`), и без изоляции вырез прошёл бы
-   * насквозь — вместе с чернильным полем страницы под полосой.
-   */
-  isolation: isolate;
-  /*
-   * 🔴 Заливки нет: ленту рисуют сами квадраты растра, и при заходе она
-   * собирается из них. Кобальт стоял здесь фоном, и на нём сборка читалась
-   * как подсветка уже готовой полосы, а не как появление.
-   */
-  block-size: var(--pa-stripe-height);
-  margin-block-start: calc(-1 * var(--pa-stripe-overlap));
-  margin-inline-end: calc(-1 * var(--pa-field));
-  /*
-   * Кромка — не бордюр, а отдельная полоска: она набирается слева направо,
-   * как индикатор загрузки, пока под ней собираются квадраты. Бордюром это
-   * не сделать — он появляется целиком.
-   */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-inline: var(--pa-field);
+  padding-block-start: var(--p-space-6);
+  padding-block-end: var(--p-space-8);
 }
 
-/*
- * Полотно ткани. Кобальт под ним остаётся: пока шейдер не скомпилировался (или
- * если WebGL в системе выключен), полоса выглядит ровно как прежде — заливкой.
- */
-/*
- * ─── РАЗВЁРТКА СОДЕРЖИМОГО СЛЕВА НАПРАВО ───────────────────────────────────
- * Строки синего экрана открываются той же стороной, что набирается полоса на
- * главной. Значение ведёт framer-motion через переменную `--pa-wipe`; без неё
- * маска раскрыта целиком, поэтому статичная разметка (витрина, печать) не
- * зависит от движения.
- */
+.pa-hero-centerpiece {
+  margin-block: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--p-space-6);
+  padding-block: var(--p-space-8);
+  text-align: center;
+}
+
+.pa-hero-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--p-space-3);
+  cursor: pointer;
+}
+
+.pa-hero-logo {
+  inline-size: clamp(148px, 18vw, 224px);
+  block-size: auto;
+  color: var(--pa-cobalt);
+}
+
+.pa-hero-lead {
+  margin: 0;
+  max-inline-size: 580px;
+  font-size: clamp(20px, 1.8vw, 24px);
+  line-height: var(--p-leading-body);
+  color: var(--s-text-quiet);
+}
+
+/* ─── Крупные компании: заголовок блока НАД чертой, все линии внутри на месте ─ */
+
+.pa-works {
+  margin-block-start: auto;
+}
+
+.pa-works-label {
+  margin-block-end: var(--p-space-3);
+  font-family: var(--pa-mono);
+  font-size: var(--p-size-meta);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--s-text-quiet);
+}
+
+.pa-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--p-space-6);
+  padding-block-start: var(--p-space-6);
+}
+
+.pa-row-top-line {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: var(--p-line-hair);
+  background-color: var(--s-border-soft);
+  transform-origin: left center;
+}
+
+@media (min-width: 900px) {
+  .pa-row {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0;
+  }
+}
+
+.pa-sep {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .pa-sep {
+    display: block;
+    flex: 0 0 auto;
+    align-self: stretch;
+    inline-size: var(--p-line-hair);
+    margin-inline: var(--p-space-8);
+    background-color: var(--s-border-soft);
+    transform-origin: top center;
+  }
+}
+
+.pa-cell {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--p-space-6);
+  min-block-size: clamp(128px, 18vh, 184px);
+  padding-block-start: var(--p-space-2);
+  padding-block-end: var(--p-space-5);
+  padding-inline: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pa-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pa-cell::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block: calc(var(--p-space-2) * -1);
+  min-block-size: var(--s-target-touch);
+}
+
+.pa-cell:focus-visible {
+  outline: 2px solid var(--pa-cobalt);
+  outline-offset: var(--p-space-2);
+}
+
+.pa-cell-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  inline-size: 100%;
+  gap: var(--p-space-3);
+}
+
+.pa-cell-idx {
+  font-family: var(--pa-mono);
+  font-size: var(--p-size-meta);
+  color: var(--pa-cobalt);
+}
+
+.pa-meta {
+  font-family: var(--pa-mono);
+  font-size: var(--p-size-meta);
+  line-height: 1.4;
+  color: var(--s-text-quiet);
+}
+
+.pa-name {
+  font-family: var(--pa-sans);
+  font-size: clamp(40px, 5vw, 84px);
+  font-weight: 600;
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  transition: color var(--pa-dur-hover) ease, transform var(--pa-dur-flag) var(--pa-ease-out);
+}
+
+.pa-cell-rail {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: var(--p-line-hair);
+  background-color: var(--s-border-soft);
+  transform-origin: left center;
+  transition: background-color var(--pa-dur-hover) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pa-cell:hover .pa-name {
+    color: var(--pa-cobalt);
+    transform: translateX(8px);
+  }
+
+  .pa-cell:hover .pa-cell-rail {
+    background-color: var(--pa-cobalt);
+  }
+}
+
 [style*="--pa-wipe"] {
-  /* Цвет в маске роли не играет — читается только альфа; берём бумагу. */
   mask-image: linear-gradient(
     90deg,
     var(--pa-paper) var(--pa-wipe),
     transparent var(--pa-wipe)
   );
-}
-
-/*
- * ─── КРОМКА КАК ПРОГРЕСС ЗАГРУЗКИ ──────────────────────────────────────────
- * Правка владельца 14.09.2026: «полоска над синей линией появлялась слева
- * направо, как прогресс загрузки пикселей». Она идёт ровно, без рывков, а
- * квадраты под ней набираются по её фронту — с рваным краем от хеша клетки.
- */
-.pa-stripe::before {
-  content: "";
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-start: 0;
-  block-size: var(--pa-stripe-edge);
-  background-color: var(--pa-paper);
-  /*
-   * 🔴 Кромка ВЫШЕ полотна и остаётся видимой. Псевдоэлемент стоит в дереве
-   * раньше полотна, и без слоя растр накрывал её собой: белая линия уходила
-   * под первый же ряд квадратов.
-   */
-  z-index: var(--s-layer-raised);
-  /*
-   * Анимация стоит на паузе, пока полотно не сообщит о начале сборки: обе
-   * линии — белая и фронт квадратов — обязаны тронуться одним кадром.
-   */
-  animation: pa-stripe-edge var(--pa-dur-boot) linear both paused;
-}
-
-.pa-stripe[data-boot="on"]::before {
-  animation-play-state: running;
-}
-
-@keyframes pa-stripe-edge {
-  from {
-    inline-size: 0;
-  }
-  to {
-    inline-size: 100%;
-  }
-}
-
-.pa-silk {
-  position: absolute;
-  inset: 0;
-  z-index: var(--s-layer-page);
-  inline-size: 100%;
-  block-size: 100%;
-  pointer-events: none;
-}
-
-/*
- * Курсив — кнопка заезда (шахматка снята 2026-09-10), поэтому здесь же сброс
- * кнопочных умолчаний: слово должно остаться словом, а не выглядеть элементом
- * управления.
- */
-.pa-cursive {
-  position: absolute;
-  inset-inline-start: var(--pa-cursive-left);
-  inset-block-start: var(--pa-cursive-top);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--pa-paper);
-  cursor: pointer;
-  font-family: var(--pa-serif);
-  font-style: italic;
-  font-weight: 400;
-  font-size: var(--pa-cursive-size);
-  line-height: var(--pa-word-leading);
-}
-
-/* Кольцо фокуса у слова-кнопки: полоса стоит навылет, поэтому наружу оно не
-   уходит дальше поля. */
-.pa-cursive:focus-visible {
-  outline: 2px solid var(--pa-paper);
-  outline-offset: 4px;
-}
-
-/* ─── Работы ───────────────────────────────────────────────────────────────── */
-
-.pa-works {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--pa-works-gap);
-  margin-block-start: var(--pa-works-offset);
-}
-
-/* Интерлиньяж задан явно и общий с метой карточки: без него высота строки
-   зависела бы от метрик гарнитуры и ряд имён уезжал бы вниз на пару пикселей
-   при смене шрифтового файла. */
-.pa-works-label {
-  font-family: var(--pa-mono);
-  font-size: var(--pa-meta-size);
-  line-height: var(--pa-meta-leading);
-  letter-spacing: var(--pa-meta-tracking);
-  color: var(--pa-mute);
-}
-
-/*
- * Имена стоят ПО СОДЕРЖИМОМУ, а не тремя равными колонками: между ними
- * разделители во всю высоту карточки.
- */
-.pa-row {
-  display: flex;
-  align-items: flex-start;
-}
-
-.pa-cell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--pa-meta-gap);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-}
-
-.pa-name {
-  display: block;
-  font-size: var(--pa-name-size);
-  font-weight: 600;
-  line-height: var(--pa-word-leading);
-  letter-spacing: var(--pa-word-tracking);
-}
-
-/* `nowrap`: без него строка меты ломается и ряд разъезжается по высоте. */
-.pa-meta {
-  display: block;
-  font-family: var(--pa-mono);
-  font-size: var(--pa-meta-size);
-  line-height: var(--pa-meta-leading);
-  letter-spacing: var(--pa-meta-tracking);
-  color: var(--pa-soft);
-  white-space: nowrap;
-}
-
-.pa-sep {
-  flex: 0 0 auto;
-  inline-size: var(--pa-sep-width);
-  margin-inline: var(--pa-sep-gap);
-  align-self: stretch;
-  background-color: var(--pa-paper-a55);
-}
-
-.pa-cell:focus-visible {
-  outline: 2px solid var(--pa-paper);
-  outline-offset: 10px;
-}
-
-/*
- * Отклик на указателе — только для точного указателя: на тач-экране состояние
- * `:hover` залипает после нажатия. Перечислены конкретные свойства, `all` не
- * используется.
- */
-@media (hover: hover) and (pointer: fine) {
-  .pa-name {
-    transition: transform var(--pa-dur-flag) var(--pa-ease-out);
-  }
-
-  .pa-meta {
-    transition: color var(--pa-dur-hover) ease;
-  }
-
-  .pa-cell:hover .pa-name {
-    transform: translateX(10px);
-  }
-
-  .pa-cell:hover .pa-meta {
-    color: var(--pa-soft-hover);
-  }
-}
-
-.pa-spec {
-  margin-block-start: auto;
-  padding-block-start: var(--pa-field);
-  font-family: var(--pa-mono);
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  color: var(--pa-mute);
 }
 
 /* ─── Синий экран компании ─────────────────────────────────────────────────── */

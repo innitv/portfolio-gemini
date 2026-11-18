@@ -24,8 +24,8 @@ const portfolioUrl = (path = "") => `${basePath.replace(/\/$/, "")}${path}` || "
 test("главная показывает имя, ряд компаний и каналы связи", async ({ page }) => {
   await page.goto(portfolioUrl());
 
-  await expect(page.getByTestId("pa-word")).toHaveText("Product");
-  await expect(page.getByTestId("pa-cursive")).toHaveText("Archive");
+  await expect(page.getByTestId("pa-word")).toHaveText("Дизайнер сложных продуктов");
+  await expect(page.getByTestId("pa-top")).toContainText("Иван Игнатов");
 
   for (const id of ["a3", "rtk", "smlt"]) {
     await expect(page.getByTestId(`pa-company-${id}`)).toBeVisible();
@@ -740,7 +740,7 @@ test("каждый адрес отдаёт свои мета и текст бе�
   const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "dist");
 
   const pages = [
-    { file: "index.html", title: "продуктовый дизайнер", text: "Archive" },
+    { file: "index.html", title: "продуктовый дизайнер", text: "Дизайнер сложных продуктов" },
     { file: "a3/index.html", title: "А3 — кейсы", text: "Редизайн главной" },
     { file: "rtk/case/subscriptions/index.html", title: "Подписки · РТК", text: "Подписки" },
     { file: "smlt/case/options-map/index.html", title: "Карта опций · Самолет", text: "Карта опций" },
