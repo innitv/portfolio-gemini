@@ -508,9 +508,9 @@ html[data-portfolio-surface="archive"] body {
 
 .pa-name {
   font-family: var(--pa-sans);
-  font-size: var(--p-size-sub);
-  font-weight: 600;
-  line-height: 1;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.05;
   letter-spacing: -0.025em;
   white-space: nowrap;
   transition: color var(--pa-dur-hover) ease, transform var(--pa-dur-flag) var(--pa-ease-out);
@@ -519,6 +519,7 @@ html[data-portfolio-surface="archive"] body {
 @media (min-width: 900px) {
   .pa-name {
     font-size: clamp(40px, 5vw, 84px);
+    font-weight: 600;
     line-height: 0.94;
     letter-spacing: -0.03em;
   }
@@ -713,20 +714,29 @@ html[data-portfolio-surface="archive"] body {
  * прозрачность строки и приходит своим шагом лесенки.
  */
 .pa-cases {
-  margin-inline: calc(-1 * var(--pa-field));
+  margin-inline: 0;
+}
+
+@media (min-width: 900px) {
+  .pa-cases {
+    margin-inline: calc(-1 * var(--pa-field));
+  }
 }
 
 /*
- * Минимальная высота 56 — тач-цель. По содержимому строка выходила 44-48 px на
- * узком экране: WCAG 2.5.8 требует 24, но палец промахивается и по 44.
+ * Минимальная высота 56 — тач-цель. На мобилке строка совпадает по высоте,
+ * отступам и кеглю с `.pa-cell` на главной.
  */
 .pa-case {
   display: flex;
   align-items: center;
-  gap: clamp(12px, 2vw, 26px);
+  justify-content: space-between;
+  gap: var(--p-space-3);
   inline-size: 100%;
-  min-block-size: 56px;
-  padding: var(--p-space-5) var(--pa-field);
+  block-size: 56px;
+  min-block-size: var(--s-target-touch);
+  padding-block: 0;
+  padding-inline: 0;
   border: 0;
   border-block-end: 1px solid var(--pa-paper-a30);
   background: transparent;
@@ -734,6 +744,15 @@ html[data-portfolio-surface="archive"] body {
   font: inherit;
   text-align: start;
   cursor: pointer;
+}
+
+@media (min-width: 900px) {
+  .pa-case {
+    gap: var(--p-space-3);
+    block-size: clamp(64px, 8.5vh, 88px);
+    padding-block: 0;
+    padding-inline: var(--pa-field);
+  }
 }
 
 /* Верхняя линия ряда — на первой строке; `border: 0` выше её не снимает,
@@ -750,8 +769,19 @@ html[data-portfolio-surface="archive"] body {
 }
 
 .pa-case-title {
-  font-size: clamp(20px, 2.3vw, 32px);
-  letter-spacing: -0.01em;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+@media (min-width: 900px) {
+  .pa-case-title {
+    font-size: clamp(20px, 2.3vw, 32px);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
 }
 
 .pa-case-impact {

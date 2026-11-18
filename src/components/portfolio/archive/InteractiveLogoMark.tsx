@@ -36,6 +36,8 @@ const CROSSHAIRS: [number, number][] = [
 ]
 
 const TOTAL_DURATION_MS = 2700
+const INITIAL_DELAY_MS = 600
+const PAUSE_BETWEEN_MS = 1800
 
 /**
  * Полная пошаговая история из `logo-story`:
@@ -53,30 +55,55 @@ export function InteractiveLogoMark({
 }) {
   const [playing, setPlaying] = React.useState(false)
   const [cycle, setCycle] = React.useState(0)
-  const timerRef = React.useRef<number | null>(null)
+  const playTimerRef = React.useRef<number | null>(null)
+  const nextTimerRef = React.useRef<number | null>(null)
+  const playingRef = React.useRef(false)
 
-  React.useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) window.clearTimeout(timerRef.current)
+  const clearTimers = React.useCallback(() => {
+    if (playTimerRef.current !== null) {
+      window.clearTimeout(playTimerRef.current)
+      playTimerRef.current = null
+    }
+    if (nextTimerRef.current !== null) {
+      window.clearTimeout(nextTimerRef.current)
+      nextTimerRef.current = null
     }
   }, [])
 
-  const triggerStory = () => {
-    if (playing) return
+  const startCycle = React.useCallback(() => {
+    if (playingRef.current) return
+    clearTimers()
+    playingRef.current = true
     setPlaying(true)
     setCycle((c) => c + 1)
-    timerRef.current = window.setTimeout(() => {
+
+    playTimerRef.current = window.setTimeout(() => {
+      playingRef.current = false
       setPlaying(false)
-      timerRef.current = null
+      playTimerRef.current = null
+      nextTimerRef.current = window.setTimeout(() => {
+        startCycle()
+      }, PAUSE_BETWEEN_MS)
     }, TOTAL_DURATION_MS)
-  }
+  }, [clearTimers])
+
+  React.useEffect(() => {
+    nextTimerRef.current = window.setTimeout(() => {
+      startCycle()
+    }, INITIAL_DELAY_MS)
+
+    return () => {
+      playingRef.current = false
+      clearTimers()
+    }
+  }, [clearTimers, startCycle])
 
   return (
     <m.div
       className="pa-hero-logo-wrap"
-      onClick={triggerStory}
-      onMouseEnter={triggerStory}
-      title="Нажми или наведи, чтобы увидеть все 4 среза сборки знака из «И И»"
+      onClick={startCycle}
+      onMouseEnter={startCycle}
+      title="Сборка знака из «И И» через 4 среза под 45°"
       {...revealProps}
     >
       <svg
