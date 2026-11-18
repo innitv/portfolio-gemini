@@ -223,10 +223,17 @@ html[data-portfolio-surface="archive"] body {
 }
 
 .pa-top-logo {
+  display: none;
   inline-size: 28px;
   block-size: 20px;
   color: var(--pa-cobalt);
   flex-shrink: 0;
+}
+
+@media (min-width: 900px) {
+  .pa-top-logo {
+    display: block;
+  }
 }
 
 .pa-brand-text {
@@ -308,33 +315,60 @@ html[data-portfolio-surface="archive"] body {
   margin-block: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  gap: var(--p-space-6);
-  padding-block: var(--p-space-8);
-  text-align: center;
+  gap: var(--p-space-4);
+  padding-block: var(--p-space-4);
+  text-align: left;
+}
+
+@media (min-width: 900px) {
+  .pa-hero-centerpiece {
+    align-items: center;
+    gap: var(--p-space-6);
+    padding-block: var(--p-space-8);
+    text-align: center;
+  }
 }
 
 .pa-hero-logo-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--p-space-3);
+  padding: 0;
   cursor: pointer;
 }
 
+@media (min-width: 900px) {
+  .pa-hero-logo-wrap {
+    padding: var(--p-space-3);
+  }
+}
+
 .pa-hero-logo {
-  inline-size: clamp(148px, 18vw, 224px);
+  inline-size: 128px;
   block-size: auto;
   color: var(--pa-cobalt);
+}
+
+@media (min-width: 900px) {
+  .pa-hero-logo {
+    inline-size: clamp(148px, 18vw, 224px);
+  }
 }
 
 .pa-hero-lead {
   margin: 0;
   max-inline-size: 580px;
-  font-size: clamp(20px, 1.8vw, 24px);
+  font-size: var(--p-size-body);
   line-height: var(--p-leading-body);
   color: var(--s-text-quiet);
+}
+
+@media (min-width: 900px) {
+  .pa-hero-lead {
+    font-size: clamp(20px, 1.8vw, 24px);
+  }
 }
 
 /* ─── Крупные компании: заголовок блока НАД чертой, все линии внутри на месте ─ */
@@ -356,8 +390,8 @@ html[data-portfolio-surface="archive"] body {
   position: relative;
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--p-space-6);
-  padding-block-start: var(--p-space-6);
+  gap: 0;
+  padding-block-start: 0;
 }
 
 .pa-row-top-line {
@@ -376,6 +410,7 @@ html[data-portfolio-surface="archive"] body {
     align-items: stretch;
     justify-content: space-between;
     gap: 0;
+    padding-block-start: var(--p-space-6);
   }
 }
 
@@ -399,13 +434,13 @@ html[data-portfolio-surface="archive"] body {
   position: relative;
   flex: 1;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--p-space-6);
-  min-block-size: clamp(128px, 18vh, 184px);
-  padding-block-start: var(--p-space-2);
-  padding-block-end: var(--p-space-5);
+  gap: var(--p-space-3);
+  block-size: 56px;
+  min-block-size: var(--s-target-touch);
+  padding-block: 0;
   padding-inline: 0;
   border: 0;
   background: transparent;
@@ -413,6 +448,19 @@ html[data-portfolio-surface="archive"] body {
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+@media (min-width: 900px) {
+  .pa-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--p-space-6);
+    block-size: auto;
+    min-block-size: clamp(144px, 18vh, 184px);
+    padding-block-start: var(--p-space-2);
+    padding-block-end: var(--p-space-5);
+  }
 }
 
 .pa-cell::after {
@@ -431,9 +479,17 @@ html[data-portfolio-surface="archive"] body {
 .pa-cell-head {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  inline-size: 100%;
-  gap: var(--p-space-3);
+  gap: var(--p-space-2);
+  order: 2;
+}
+
+@media (min-width: 900px) {
+  .pa-cell-head {
+    order: 0;
+    justify-content: space-between;
+    inline-size: 100%;
+    gap: var(--p-space-3);
+  }
 }
 
 .pa-cell-idx {
@@ -447,16 +503,25 @@ html[data-portfolio-surface="archive"] body {
   font-size: var(--p-size-meta);
   line-height: 1.4;
   color: var(--s-text-quiet);
+  white-space: nowrap;
 }
 
 .pa-name {
   font-family: var(--pa-sans);
-  font-size: clamp(40px, 5vw, 84px);
+  font-size: var(--p-size-sub);
   font-weight: 600;
-  line-height: 0.94;
-  letter-spacing: -0.03em;
+  line-height: 1;
+  letter-spacing: -0.025em;
   white-space: nowrap;
   transition: color var(--pa-dur-hover) ease, transform var(--pa-dur-flag) var(--pa-ease-out);
+}
+
+@media (min-width: 900px) {
+  .pa-name {
+    font-size: clamp(40px, 5vw, 84px);
+    line-height: 0.94;
+    letter-spacing: -0.03em;
+  }
 }
 
 .pa-cell-rail {
@@ -787,7 +852,7 @@ html[data-portfolio-surface="archive"] body {
 
 /* ─── Планшет и узкий ноут ─────────────────────────────────────────────────── */
 
-@media (max-width: 1199px) {
+@media (min-width: 900px) and (max-width: 1199px) {
   .pa-row {
     flex-direction: column;
     gap: clamp(20px, 3.5vh, 36px);
@@ -808,20 +873,11 @@ html[data-portfolio-surface="archive"] body {
   }
 
   /*
-   * Величины компании на телефоне сняты — решение владельца 15.09.2026: «они не
-   * особо играют какую-то роль». На широком экране они стоят рядом со списком
-   * работ и читаются вместе с ним, а на узком уезжают в конец простынёй из
-   * трёх строк, которую пролистывают не читая.
-   *
-   * 🔴 `visibility`, а НЕ `display: none`. Лист раскладывает три блока через
-   * `space-between`: шапка, список работ, величины. Стоит величинам выпасть из
-   * потока, как блоков остаётся два, и список работ уезжает к нижнему краю —
-   * владелец поймал это сразу: «блок с проектами почему уехал вниз, он то на
-   * месте остаться должен». `visibility` убирает величины из показа, из чтения
-   * диктором и из табуляции, но их место в раскладке сохраняет.
+   * Величины компании на телефоне сняты, и блок исключается из потока, чтобы
+   * список работ прижимался к нижнему краю листа, как список компаний на главной.
    */
   .pa-facts {
-    visibility: hidden;
+    display: none;
   }
 }
 

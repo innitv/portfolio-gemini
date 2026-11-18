@@ -506,7 +506,9 @@ test("список работ держит высоту на обеих вкла
         casesTop: Math.round(cases.top),
         facts: Math.round(facts.top),
         /* Показаны ли величины — отдельно от того, занимают ли они место. */
-        factsShown: getComputedStyle(factsNode).visibility !== "hidden",
+        factsShown:
+          getComputedStyle(factsNode).display !== "none" &&
+          getComputedStyle(factsNode).visibility !== "hidden",
         factsSpace: Math.round(facts.height),
       };
     });
@@ -527,14 +529,6 @@ test("список работ держит высоту на обеих вкла
       works.facts,
     );
 
-    /*
-      Величины на телефоне сняты, но место держат.
-
-      🔴 Второе — не придирка к способу. Лист раскладывает шапку, список работ и
-      величины через `space-between`: выпади величины из потока, блоков станет
-      два, и список уедет к нижнему краю — на 390 это 240 px вниз. Поэтому
-      сторожится и показ (`visibility`), и сохранённое место (высота блока).
-    */
     if (width < 640) {
       expect(
         works.factsShown,
@@ -542,8 +536,8 @@ test("список работ держит высоту на обеих вкла
       ).toBe(false);
       expect(
         works.factsSpace,
-        `Ширина ${width}: величины выпали из потока — список уедет вниз`,
-      ).toBeGreaterThan(0);
+        `Ширина ${width}: величины занимают место — список не прижат к низу`,
+      ).toBe(0);
     } else {
       expect(
         works.factsShown,
