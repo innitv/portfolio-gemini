@@ -24,7 +24,7 @@
     "test-storybook": "vitest run --project=storybook",
     "qa:case-grid": "node tests/case-grid.check.mjs",
     "tokens:check": "node tests/tokens.check.mjs",
-    "hooks:check": "python .claude/hooks/hooks.check.py"
+    "hooks:check": "python .agents/hooks/hooks.check.py"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",

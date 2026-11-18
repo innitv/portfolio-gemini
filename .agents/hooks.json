@@ -1,0 +1,44 @@
+{
+  "guard-generated": {
+    "PreToolUse": [
+      {
+        "matcher": "write_file|edit_file|write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ./hooks/guard-generated.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "guard-secrets": {
+    "PreToolUse": [
+      {
+        "matcher": "read_file|view_file|run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ./hooks/guard-secrets.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "check-tokens": {
+    "PostToolUse": [
+      {
+        "matcher": "write_file|edit_file|write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ./hooks/check-tokens.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

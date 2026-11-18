@@ -27,6 +27,16 @@ DUMPERS = (
 )
 
 
+def allow() -> int:
+    print(json.dumps({"decision": "allow"}))
+    return 0
+
+
+def deny(reason: str) -> int:
+    print(json.dumps({"decision": "deny", "reason": reason}, ensure_ascii=False))
+    return 0
+
+
 def dumps_secret(command: str) -> bool:
     """
     Опасно ли звено команды.
@@ -50,33 +60,35 @@ def main() -> int:
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):
-        return 0
+        return allow()
 
-    tool = payload.get("tool_name", "")
-    tool_input = payload.get("tool_input") or {}
+    tool_call = payload.get("toolCall") or {}
+    tool = tool_call.get("name", "")
+    args = tool_call.get("args") or {}
 
-    if tool in ("Read", "NotebookRead"):
-        path = str(tool_input.get("file_path", "")).replace("\\", "/")
+    if tool in ("read_file", "view_file"):
+        path = str(
+            args.get("Path")
+            or args.get("AbsolutePath")
+            or args.get("file_path")
+            or ""
+        ).replace("\\", "/")
         if path.endswith(SECRET):
-            print(
+            return deny(
                 f"{SECRET} содержит логин и пароль FTP — читать его не нужно.\n"
                 "Скриптам выгрузки он доступен и так; для проверки заполненности "
-                "есть разбор, который печатает только длину полей.",
-                file=sys.stderr,
+                "есть разбор, который печатает только длину полей."
             )
-            return 2
 
-    if tool in ("Bash", "PowerShell"):
-        command = str(tool_input.get("command", ""))
+    if tool == "run_command":
+        command = str(args.get("CommandLine") or args.get("command") or "")
         if dumps_secret(command):
-            print(
+            return deny(
                 f"Команда выводит содержимое {SECRET} — там пароль FTP.\n"
-                "Читай из него значения программой, которая их не печатает.",
-                file=sys.stderr,
+                "Читай из него значения программой, которая их не печатает."
             )
-            return 2
 
-    return 0
+    return allow()
 
 
 if __name__ == "__main__":

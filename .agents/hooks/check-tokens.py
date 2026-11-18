@@ -7,9 +7,8 @@
 секунды, но её вспоминают в конце работы — когда таких правок накопилось
 десяток и непонятно, какая нарушила правило.
 
-Хук печатает результат в поток, который видит модель: код возврата 0, работа не
-прерывается. Это подсказка, а не запрет: бывают осознанные отклонения, и решает
-их человек.
+Хук печатает результат в stderr, а в stdout отдаёт `{}` по контракту
+PostToolUse в Antigravity: код возврата 0, работа не прерывается.
 """
 import json
 import subprocess
@@ -24,10 +23,20 @@ def main() -> int:
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):
+        print("{}")
         return 0
 
-    path = str((payload.get("tool_input") or {}).get("file_path", "")).replace("\\", "/")
+    tool_call = payload.get("toolCall") or {}
+    args = tool_call.get("args") or {}
+    path = str(
+        args.get("Path")
+        or args.get("TargetFile")
+        or args.get("file_path")
+        or ""
+    ).replace("\\", "/")
+
     if not path.endswith(".css") or not any(part in path for part in WATCHED):
+        print("{}")
         return 0
 
     try:
@@ -40,11 +49,12 @@ def main() -> int:
         )
     except (OSError, subprocess.SubprocessError) as error:
         print(f"tokens:check не запустился: {error}", file=sys.stderr)
+        print("{}")
         return 0
 
     output = (result.stdout + result.stderr).strip()
     if result.returncode == 0:
-        print(f"tokens:check — {output.splitlines()[-1] if output else 'pass'}")
+        print(f"tokens:check — {output.splitlines()[-1] if output else 'pass'}", file=sys.stderr)
     else:
         print(
             "🔴 tokens:check упал после правки стилей:\n"
@@ -54,6 +64,7 @@ def main() -> int:
             file=sys.stderr,
         )
 
+    print("{}")
     return 0
 
 
