@@ -24,7 +24,6 @@ const REVEAL_STAGGER = TIMING.revealStagger
 const REVEAL_DURATION = DURATION.reveal
 const EASE_REVEAL = EASE.item
 const FONTS_TIMEOUT = 600
-const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V"] as const
 
 export interface PortfolioArchiveViewProps {
   /** Компания, синий экран которой раскрыт (`/` — ни одной, `/a3` — А3). */
@@ -209,7 +208,6 @@ export function PortfolioArchiveView({
                     {...reveal(REVEAL_ORDER.companyBase + index)}
                   >
                     <span className="pa-cell-head">
-                      <span className="pa-cell-idx">({ROMAN_NUMERALS[index] ?? index + 1})</span>
                       <span className="pa-meta">{item.meta}</span>
                     </span>
                     <span className="pa-name">{item.wordmark}</span>

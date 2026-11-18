@@ -16,19 +16,6 @@ import type { ArchiveCompany } from "@/views/portfolio-archive.model"
  */
 type TabId = "all" | "ai"
 
-/*
- * Нумерация строк СЧИТАЕТСЯ ПО МЕСТУ В СПИСКЕ, а не берётся из данных кейса.
- *
- * Владелец 2026-08-27: «нумерация кейсов в табе AI тоже начинается с единицы».
- * В данных номер сквозной по компании (у первых работ А3 это I-III, у AI-работ
- * IV-VI) — он принадлежит порядку кейсов компании, а не показанному списку.
- * Внутри вкладки счёт свой: человек видит три работы и ждёт I, II, III.
- *
- * Запас на шесть строк: у компании их сейчас максимум три на вкладку, а дальше
- * подставляется номер из данных — лучше сквозной, чем пустое место.
- */
-const ROMAN = ["I", "II", "III", "IV", "V", "VI"]
-
 const TABS: { id: TabId; label: string }[] = [
   { id: "all", label: "работы" },
   { id: "ai", label: "ai-работы" },
@@ -528,7 +515,6 @@ export function ArchiveSheet({
                       type="button"
                       {...(active ? caseItem(index) : {})}
                     >
-                      <span className="pa-case-index">{ROMAN[index] ?? study.index}</span>
                       <span className="pa-case-title">{study.title}</span>
                       <span className="pa-case-impact">{study.impact}</span>
                     </m.button>
